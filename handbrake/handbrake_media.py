@@ -9,15 +9,16 @@ class HandBrakeChapter:
 # ==================================================
     # ------------------------------
     def __init__(self):
-        self.no              = 0
-        self.cells_begin     = 0
-        self.cells_end       = 0
-        self.blocks          = 0
-        self.duration_hour   = 0
-        self.duration_minute = 0
-        self.duration_second = 0
+        self.no          = 0
+        self.cells_begin = 0
+        self.cells_end   = 0
+        self.blocks      = 0
+        self.hour        = 0
+        self.minute      = 0
+        self.second      = 0
     # ------------------------------
     def set(self, hb_chapter_line):
+        # 与えられた文字列がチャプター情報かどうか
         if re.match(r"^\s{4,4}\+\s(\d+?): cells", hb_chapter_line) == None:
             return False
 
@@ -30,17 +31,17 @@ class HandBrakeChapter:
 
         # 情報を抽出
         list = hb_chapter_line.split(" ")
-        self.no              = int(list[0])
-        self.cells_begin     = int(list[3])
-        self.cells_end       = int(list[4])
-        self.blocks          = int(list[5])
-        self.duration_hour   = int(list[8])
-        self.duration_minute = int(list[9])
-        self.duration_second = int(list[10])
+        self.no          = int(list[0])
+        self.cells_begin = int(list[3])
+        self.cells_end   = int(list[4])
+        self.blocks      = int(list[5])
+        self.hour        = int(list[8])
+        self.minute      = int(list[9])
+        self.second      = int(list[10])
         return True
     # ------------------------------
     def dump(self):
-        print "    %d: cells %d->%d, %d blocks, duration %02d:%02d:%02d" % (self.no, self.cells_begin, self.cells_end, self.blocks, self.duration_hour, self.duration_minute, self.duration_second)
+        print "    %d: cells %d->%d, %d blocks, duration %02d:%02d:%02d" % (self.no, self.cells_begin, self.cells_end, self.blocks, self.hour, self.minute, self.second)
 
 # ==================================================
 class HandBrakeAudioTrack:
@@ -51,6 +52,7 @@ class HandBrakeAudioTrack:
         self.locale = ""
     # ------------------------------
     def set(self, line):
+        # 与えられた文字列が音声情報か
         if re.match(r"^\s{4,4}\+\s(\d+?),\s(Japanese|English)\s(\(AC3\)|\(DTS\))", line) == None:
             return False
         # 先頭と末尾の空白を除去
@@ -71,6 +73,8 @@ class HandBrakeSubtitleTrack:
         self.locale = ""
     # ------------------------------
     def set(self, line):
+        # 与えられた文字列がサブタイトル情報か
+        # オーディオ情報と似ているので、先にオーディオ情報化を調べてください
         if re.match(r"^\s{4,4}\+\s(\d+?),\s(Japanese|English)", line) == None:
             return False
         # 先頭と末尾の空白を除去
@@ -87,14 +91,14 @@ class HandBrakeTitle:
 # ==================================================
     # ------------------------------
     def __init__(self):
-        self.no                   = 0
-        self.duration_hour        = 0
-        self.duration_minute      = 0
-        self.duration_second      = 0
+        self.no     = 0
+        self.hour   = 0
+        self.minute = 0
+        self.second = 0
 
-        self.chapter_list        = []
-        self.audio_track_list    = []
-        self.subtitle_track_list = []
+        self.chapters  = []
+        self.audios    = []
+        self.subtitles = []
     # ------------------------------
     def set_title_line(self, line):
         line = line.replace(":", "")
@@ -105,18 +109,18 @@ class HandBrakeTitle:
         match = re.search(r"\d\d:\d\d:\d\d", line)
         if match != None:
             list = match.group().split(":")
-            self.duration_hour        = int(list[0])
-            self.duration_minute      = int(list[1])
-            self.duration_second      = int(list[2])
+            self.hour   = int(list[0])
+            self.minute = int(list[1])
+            self.second = int(list[2])
     # ------------------------------
     def add_chapter(self, chapter):
-        self.chapter_list.append(chapter)
+        self.chapters.append(chapter)
     # ------------------------------
     def add_audio_track(self, audio_track):
-        self.audio_track_list.append(audio_track)
+        self.audios.append(audio_track)
     # ------------------------------
     def add_subtitle_track(self, subtitle_track):
-        self.subtitle_track_list.append(subtitle_track)
+        self.subtitles.append(subtitle_track)
     # ------------------------------
     def set(self, line):
         chapter        = HandBrakeChapter()
@@ -137,30 +141,30 @@ class HandBrakeTitle:
     # ------------------------------
     def dump(self):
         print "title %d" % self.no
-        print "  duration %02d:%02d:%02d" % (self.duration_hour, self.duration_minute, self.duration_second)
+        print "  duration %02d:%02d:%02d" % (self.hour, self.minute, self.second)
         self.dump_chapters()
-        self.dump_audio_tracks()
-        self.dump_subtitle_tracks()
+        self.dump_audios()
+        self.dump_subtitles()
     # ------------------------------
     def dump_chapters(self):
-        if len(self.chapter_list) == 0:
+        if len(self.chapters) == 0:
             return
-        print "  chapters %d" % len(self.chapter_list)
-        for chapter in self.chapter_list:
+        print "  chapters %d" % len(self.chapters)
+        for chapter in self.chapters:
             chapter.dump()
     # ------------------------------
-    def dump_audio_tracks(self):
-        if len(self.audio_track_list) == 0:
+    def dump_audios(self):
+        if len(self.audios) == 0:
             return
-        print "  audio_tracks"
-        for track in self.audio_track_list:
+        print "  audios"
+        for track in self.audios:
             track.dump()
     # ------------------------------
-    def dump_subtitle_tracks(self):
-        if len(self.subtitle_track_list) == 0:
+    def dump_subtitles(self):
+        if len(self.subtitles) == 0:
             return
-        print "  subtitle_tracks"
-        for track in self.subtitle_track_list:
+        print "  subtitles"
+        for track in self.subtitles:
             track.dump()
 
 # ==================================================
@@ -173,22 +177,20 @@ class HandBrakeMedia:
     def set(self, lines):
         title = None
         for line in lines:
+            # 先頭が `+` で始まる行ならばtitleの開始位置
             if re.match(r"^\+", line) != None:
                 if title != None:
                     self.titles.append(title)
                 title = HandBrakeTitle()
                 title.set(line)
+            # 先頭が空白1～4個かつ`+` で始まる行ならばtitle内の情報
             elif re.match(r"^\s{1,4}\+\s", line) != None:
                 title.set(line)
-        title.dump()
-
+            else:
+                if title != None:
+                    self.titles.append(title)
+                    title = None
+    # ------------------------------
+    def dump(self):
         for title in self.titles:
             title.dump()
-
-argvs = sys.argv  # コマンドライン引数を格納したリストの取得
-argc = len(argvs) # 引数の個数
-
-f = open("dvdinfo", "r")
-media = HandBrakeMedia()
-media.set(f)
-f.close()
