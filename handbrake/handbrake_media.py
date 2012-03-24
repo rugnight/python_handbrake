@@ -3,6 +3,7 @@
 import re
 import sys
 import string
+import commands
 
 # ==================================================
 class HandBrakeChapter:
@@ -53,7 +54,7 @@ class HandBrakeAudioTrack:
     # ------------------------------
     def set(self, line):
         # 与えられた文字列が音声情報か
-        if re.match(r"^\s{4,4}\+\s(\d+?),\s(Japanese|English)\s(\(AC3\)|\(DTS\))", line) == None:
+        if re.match(r"^\s{4,4}\+\s(\d+?),\s(Japanese|English)\s(\(AC3\)|\(DTS\)|\(LPCM\))", line) == None:
             return False
         # 先頭と末尾の空白を除去
         list = line.translate(string.maketrans("", ""), "+,()").strip().split()
@@ -135,8 +136,8 @@ class HandBrakeTitle:
             self.add_chapter(chapter) # 各チャプター情報の行マッチ
         elif audio_track.set(line) == True:
             self.add_audio_track(audio_track)
-        elif subtitle_track.set(line) == True:
-            self.add_subtitle_track(subtitle_track)
+        #elif subtitle_track.set(line) == True:
+        #    self.add_subtitle_track(subtitle_track)
 
     # ------------------------------
     def dump(self):
@@ -172,11 +173,25 @@ class HandBrakeMedia:
 # ==================================================
     # ------------------------------
     def __init__(self):
+        self.name   = ""
         self.titles = []
     # ------------------------------
-    def set(self, lines):
+    def set(self, media_file):
+        # 映像メディアの情報を取得
+        HB_RESEARCH_COMMAND = "HandBrakeCLI -i %s -t %s" % (media_file, "0")
+        print "COMMAND : %s" % HB_RESEARCH_COMMAND
+        research_cmd_return = commands.getstatusoutput(HB_RESEARCH_COMMAND)
+        research_result = research_cmd_return[0]
+        research_lines  = research_cmd_return[1].split("\n")
+
+        # リサーチコマンドがなんか失敗
+        if research_result != 0:
+            print "DVD情報の取得に失敗しました\n"
+            print research_lines
+            return False
+
         title = None
-        for line in lines:
+        for line in research_lines:
             # 先頭が `+` で始まる行ならばtitleの開始位置
             if re.match(r"^\+", line) != None:
                 if title != None:
@@ -190,6 +205,11 @@ class HandBrakeMedia:
                 if title != None:
                     self.titles.append(title)
                     title = None
+        # タイトル見つからなかった
+        if len(self.titles) < 1:
+            return False
+        return True
+
     # ------------------------------
     def dump(self):
         for title in self.titles:

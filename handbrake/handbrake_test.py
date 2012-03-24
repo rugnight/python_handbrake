@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # ==================================================
-# 
 #   使い方
 #       convert_media SRC DST SETTING_FILE
 # 
@@ -12,7 +11,9 @@
 
 import sys
 import commands
-import handbrake_media as HB
+import handbrake_media as HB_MEDIA
+import handbrake_setting as HB_SETTING
+import handbrake_commander as HB_COMMANDER
 
 Usage = "Usage: python convert_media.py SRC DST_DIR SETTING_FILE"
 
@@ -28,33 +29,23 @@ TARGET_FILE  = argvs[1]      # 変換対象ファイル名
 OUTPUT_DIR   = argvs[2]      # 出力先ディレクトリ名
 SETTING_FILE = argvs[3]      # 設定ファイル
 
-# 映像メディアの情報を取得
-HB_RESEARCH_COMMAND = "HandBrakeCLI -i %s -t %s" % (TARGET_FILE, "0")
-research_cmd_return = commands.getstatusoutput(HB_RESEARCH_COMMAND)
-research_result = research_cmd_return[0]
-research_lines  = research_cmd_return[1]
+# メディアの情報
+media = HB_MEDIA.HandBrakeMedia()
+if media.set(TARGET_FILE) == False:
+    print "this media have no titles"
 
-# なんか失敗
-if research_result == 0:
-    print "DVD情報の取得に失敗しました\n"
+# 設定ファイル読み込み
+setting = HB_SETTING.HandBrakeSetting()
+if setting.set(SETTING_FILE) == False:
+    print "invalid setting file"
     exit()
 
-# メディアの情報
-media = HB.HandBrakeMedia()
-media.set(research_lines)
-media.dump()
+commands = HB_COMMANDER.HandBrakeCommander()
+if commands.set(media, setting, OUTPUT_DIR) == False:
+    print "command generate failed"
+    exit()
+
+commands.dump()    
 
 exit()
 
-#HB_COMMAND = "HandBrakeCLI -i %s -t %s" % (TARGET_FILE, "0")
-HB_COMMAND = "ls"
-
-results    = commands.getstatusoutput(HB_COMMAND)
-media_info = results[1]
-print media_info 
-
-media = HB.HandBrakeMedia()
-media.set(f)
-
-# メディアがどういう物か？
-analyse = HandBrakeMediaAnalyser()
