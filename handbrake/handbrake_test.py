@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
 # ==================================================
-# 
 # 
 #   使い方
 #       convert_media SRC DST SETTING_FILE
@@ -24,6 +22,7 @@ argc  = len(argvs)
 
 if argc < 4:
     print Usage 
+    exit()
 
 TARGET_FILE  = argvs[1]      # 変換対象ファイル名
 OUTPUT_DIR   = argvs[2]      # 出力先ディレクトリ名
