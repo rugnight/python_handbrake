@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os 
 import sys
 import commands
 import handbrake_media as HB_MEDIA
@@ -34,7 +35,7 @@ class HandBrakeCommander:
             
             # 実際に叩くコマンドを生成
             for i, chapter_split in enumerate(chapter_splits):
-                TARGET_NAME      = media.name
+                TARGET_NAME      = os.path.splitext(media.name)[0]
                 OUTPUT_EXT       = "m4v"
                 TITLE_NO         = title.no
                 PRESET_NAME      = setting.profile
