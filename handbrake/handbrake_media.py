@@ -177,16 +177,16 @@ class HandBrakeMedia:
         self.titles = []
     # ------------------------------
     def set(self, media_file):
+        self.name   = media_file
         # 映像メディアの情報を取得
-        HB_RESEARCH_COMMAND = "HandBrakeCLI -i %s -t %s" % (media_file, "0")
-        print "COMMAND : %s" % HB_RESEARCH_COMMAND
+        HB_RESEARCH_COMMAND = "HandBrakeCLI -i %s -t %s" % (self.name, "0")
         research_cmd_return = commands.getstatusoutput(HB_RESEARCH_COMMAND)
         research_result = research_cmd_return[0]
         research_lines  = research_cmd_return[1].split("\n")
 
         # リサーチコマンドがなんか失敗
         if research_result != 0:
-            print "DVD情報の取得に失敗しました\n"
+            print "failed research command : %s" % HB_RESEARCH_COMMAND 
             print research_lines
             return False
 

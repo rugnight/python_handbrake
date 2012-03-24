@@ -8,25 +8,26 @@ import handbrake_setting as HB_SETTING
 class HandBrakeCommander:
     def __init__(self):
         self.command_list = []
+        self.no_convert_list = []
 
     def set(self, media, setting, output_dir):
         for title in media.titles:
             # 設定された有効時間を超える映像か
             if title.hour < setting.title_duration_available_hour or title.minute < setting.title_duration_available_minute or title.second < setting.title_duration_available_second:
-                print "[no conv] title %d duration less than setting" % title.no
+                self.no_convert_list.append("[no conv] title %d duration less than setting" % title.no)
                 continue
             
             # チャプター分割設定を読み込み
             chapter_splits = []
             chapter_num = len(title.chapters)
             if chapter_num < setting.chapter_split:
-                print "[no conv] title %d chapter num less than chpater split setting" % title.no
+                self.no_convert_list.append("[no conv] title %d chapter num less than chpater split setting" % title.no)
                 continue
 
             # 実際のチャプター数に収まる回数チャプター分割する
             begin = 1
             end   = begin + setting.chapter_split - 1
-            while ( end < chapter_num ):
+            while ( end <= chapter_num ):
                 chapter_splits.append([begin, end])
                 begin = end + 1
                 end   = begin + setting.chapter_split - 1
@@ -47,7 +48,7 @@ class HandBrakeCommander:
                                                             OUTPUT_EXT )
                 OUTPUT_FULL_NAME = OUTPUT_FULL_NAME.replace("//", "/")
 
-                HB_CONVERT_COMMAND= "HandBrakeCLI -i %s -t %d -c %d-%d -a %d -o %s --preset \"%s\"" %(TARGET_NAME, \
+                HB_CONVERT_COMMAND= "HandBrakeCLI -i %s -t %d -c %d-%d -a %d -o %s --preset %s" %(TARGET_NAME, \
                                                                                                         TITLE_NO, \
                                                                                                         CHAPTER_BEGIN, \
                                                                                                         CHAPTER_END, \
@@ -60,7 +61,15 @@ class HandBrakeCommander:
             return False
         return True
 
-    def dump(self):
+    def dump_commands(self):
         for command in self.command_list:
             print command 
+
+    def dump_no_convert_list(self):
+        for no_conv in self.no_convert_list:
+            print no_conv 
+
+    def dump(self):
+        self.dump_commands()
+        self.dump_no_convert_list()
 

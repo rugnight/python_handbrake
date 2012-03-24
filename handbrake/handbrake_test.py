@@ -15,7 +15,7 @@ import handbrake_media as HB_MEDIA
 import handbrake_setting as HB_SETTING
 import handbrake_commander as HB_COMMANDER
 
-Usage = "Usage: python convert_media.py SRC DST_DIR SETTING_FILE"
+Usage = "Usage: python convert_media.py SRC_MEDIA DST_DIR SETTING_FILE"
 
 # 引数の処理
 argvs = sys.argv;
@@ -33,6 +33,7 @@ SETTING_FILE = argvs[3]      # 設定ファイル
 media = HB_MEDIA.HandBrakeMedia()
 if media.set(TARGET_FILE) == False:
     print "this media have no titles"
+    exit()
 
 # 設定ファイル読み込み
 setting = HB_SETTING.HandBrakeSetting()
@@ -40,12 +41,12 @@ if setting.set(SETTING_FILE) == False:
     print "invalid setting file"
     exit()
 
+# HandBrake実行コマンドを生成
 commands = HB_COMMANDER.HandBrakeCommander()
 if commands.set(media, setting, OUTPUT_DIR) == False:
     print "command generate failed"
     exit()
 
 commands.dump()    
-
+print "done..."
 exit()
-
