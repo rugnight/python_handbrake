@@ -180,7 +180,6 @@ class HandBrakeMedia:
                 title.set(line)
             elif re.match(r"^\s{1,4}\+\s", line) != None:
                 title.set(line)
-        title.dump()
 
         for title in self.titles:
             title.dump()
